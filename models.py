@@ -34,4 +34,3 @@ class BookingResponse(BaseModel):
     booking_date: str
     driver_id: str
 
-#needs work also driver needs to be added, see if you can make model for cars and also employee, would be neat if you can create employee through api
