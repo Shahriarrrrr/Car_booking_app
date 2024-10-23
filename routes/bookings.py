@@ -30,7 +30,7 @@ async def create_booking(booking: Booking):
     if datetime.strptime(booking.booking_date, "%Y-%m-%d") <= datetime.now():
         raise HTTPException(status_code=400, detail="Booking date must be in the future.")
 
-    # Check for employee on same date booking
+    # same date booking check
     existing_booking = await bookings.find_one({
         "employee_id": booking.employee_id,
         "car_id": booking.car_id,
@@ -47,7 +47,7 @@ async def create_booking(booking: Booking):
     if existing_car_booking:
         raise HTTPException(status_code=400, detail="Car is already booked on this date.")
 
-    # Convert car_id to ObjectId
+    # car_id to ObjectId
     try:
         car_id_object = ObjectId(booking.car_id)
     except Exception:
@@ -63,7 +63,7 @@ async def create_booking(booking: Booking):
     if not driver_id:
         raise HTTPException(status_code=400, detail="Driver missing for the selected car.")
 
-    # Create the booking document with driver ID
+
     booking_doc = {
         "employee_id": booking.employee_id,
         "car_id": booking.car_id,
@@ -83,7 +83,7 @@ async def create_booking(booking: Booking):
 async def update_booking(update_booking: UpdateBooking):
 
 
-    # Fetch the booking for the employee based on the previous booking date
+    
     booking = await bookings.find_one({
         "employee_id": update_booking.employee_id,
         "booking_date": update_booking.previous_booking_date
