@@ -53,12 +53,12 @@ async def create_booking(booking: Booking):
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid car ID format.")
 
-    # Get car info to fetch the driver ID
+    
     car_info = await car_collection.find_one({"_id": car_id_object})
     if not car_info:
         raise HTTPException(status_code=404, detail="Car not found.")
 
-    # Fetch driver ID from car_info
+    
     driver_id = car_info.get("driver_id")
     if not driver_id:
         raise HTTPException(status_code=400, detail="Driver missing for the selected car.")
