@@ -116,7 +116,7 @@ async def update_booking(update_booking: UpdateBooking):
 
         update_fields["booking_date"] = update_booking.new_booking_date
     #BUG in update -> converts to object id while updating
-    #FIXED
+    #FIXED the bug now it stores string when updates are called
     if update_fields:
         await bookings.update_one(
             {"employee_id": update_booking.employee_id, "booking_date": update_booking.previous_booking_date},
