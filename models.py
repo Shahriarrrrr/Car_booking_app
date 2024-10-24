@@ -34,3 +34,8 @@ class BookingResponse(BaseModel):
     booking_date: str
     driver_id: str
 
+class DeleteModel(BaseModel):
+    employee_id: str
+    car_id: str
+    booking_date: str
+

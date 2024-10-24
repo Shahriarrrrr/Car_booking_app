@@ -80,7 +80,7 @@ def update_booking(employee_id, previous_booking_date, new_booking_date, car_id=
     if previous_booking_date_dt.date() == datetime.now().date():
         return {"error": "Cannot update booking on the booked date."}
 
-    # Prepare the update fields
+
     update_fields = {}
     if car_id:
         update_fields["car_id"] = car_id
