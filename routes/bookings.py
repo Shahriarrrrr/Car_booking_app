@@ -81,9 +81,7 @@ async def create_booking(booking: Booking):
 
 @router.put("/bookings/update/")
 async def update_booking(update_booking: UpdateBooking):
-
-
-    
+    # Fetch the booking for the employee based on the previous booking date
     booking = await bookings.find_one({
         "employee_id": update_booking.employee_id,
         "booking_date": update_booking.previous_booking_date
@@ -92,30 +90,20 @@ async def update_booking(update_booking: UpdateBooking):
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found for the given employee on the specified date.")
 
-
     previous_booking_date_dt = datetime.strptime(update_booking.previous_booking_date, "%Y-%m-%d")
     if previous_booking_date_dt.date() <= datetime.now().date():
         raise HTTPException(status_code=400, detail="Cannot update booking on the booked date or in the past.")
 
-
     update_fields = {}
 
-
     if update_booking.car_id is not None:
-        # Convert car_id to ObjectId
-        try:
-            car_id_object = ObjectId(update_booking.car_id)
-            update_fields["car_id"] = car_id_object
-        except Exception:
-            raise HTTPException(status_code=400, detail="Invalid car ID format.")
-
+        update_fields["car_id"] = update_booking.car_id
 
     if update_booking.new_booking_date:
 
         new_booking_date_dt = datetime.strptime(update_booking.new_booking_date, "%Y-%m-%d")
         if new_booking_date_dt < datetime.now():
             raise HTTPException(status_code=400, detail="Cannot set booking date in the past.")
-
 
         existing_car_booking = await bookings.find_one({
             "car_id": update_fields.get("car_id", booking["car_id"]),  # Use the new car_id if provided
@@ -125,14 +113,13 @@ async def update_booking(update_booking: UpdateBooking):
             raise HTTPException(status_code=400, detail="The car is already booked on the new date.")
 
         update_fields["booking_date"] = update_booking.new_booking_date
-
-
+    #BUG in update -> converts to object id while updating
+    #FIXED the bug now it stores string when updates are called
     if update_fields:
         await bookings.update_one(
             {"employee_id": update_booking.employee_id, "booking_date": update_booking.previous_booking_date},
             {"$set": update_fields}
         )
-
 
         await record_create({
             "employee_id": update_booking.employee_id,
