@@ -11,8 +11,8 @@ router = APIRouter()
 async def search(date: str):
     # Validate the date format
     try:
-        search_date = datetime.strptime(date, "%Y-%m-%d").date()  # date object
-        search_date_str = search_date.strftime("%Y-%m-%d")  # Convert  to string
+        search_date = datetime.strptime(date, "%Y-%m-%d").date() # date object
+        search_date_str = search_date.strftime("%Y-%m-%d")  # to string
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
 

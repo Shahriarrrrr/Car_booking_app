@@ -8,7 +8,7 @@ router = APIRouter()
 
 
 @router.post("/bookings/history")
-async def record_create(booking_doc, is_update=False, previous_booking_date=None, last_updated= f"{datetime.now()}"):
+async def record_create(booking_doc, is_update=False, previous_booking_date=None, last_updated=f"{datetime.now()}"):
     record = {
         "employee_id": booking_doc["employee_id"],
         "car_id": booking_doc["car_id"],
@@ -18,6 +18,7 @@ async def record_create(booking_doc, is_update=False, previous_booking_date=None
         "new_booking_date": booking_doc["booking_date"] if is_update else None
     }
     await bookings_history.insert_one(record)
+
 
 @router.post("/bookings/")
 async def create_booking(booking: Booking):
@@ -30,45 +31,46 @@ async def create_booking(booking: Booking):
     if datetime.strptime(booking.booking_date, "%Y-%m-%d") <= datetime.now():
         raise HTTPException(status_code=400, detail="Booking date must be in the future.")
 
-    # Check for employee on same date booking
+    # Check
     existing_booking = await bookings.find_one({
         "employee_id": booking.employee_id,
         "car_id": booking.car_id,
         "booking_date": booking.booking_date
     })
 
-    print(f"Checking for existing booking: Employee ID: {booking.employee_id}, Car ID: {booking.car_id}, Date: {booking.booking_date}")
+    print(
+        f"Checking for existing booking: Employee ID: {booking.employee_id}, Car ID: {booking.car_id}, Date: {booking.booking_date}")
 
     if existing_booking:
         raise HTTPException(status_code=400, detail="Employee already has a booking for this car on this date.")
 
-    # Check if the car is already booked on the specified date
+    # Check
     existing_car_booking = await bookings.find_one({"car_id": booking.car_id, "booking_date": booking.booking_date})
     if existing_car_booking:
         raise HTTPException(status_code=400, detail="Car is already booked on this date.")
 
-    # Convert car_id to ObjectId
+    # In database i have store car id as object id
     try:
         car_id_object = ObjectId(booking.car_id)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid car ID format.")
 
-    # Get car info to fetch the driver ID
+    # The driver ID what i want to store as well
     car_info = await car_collection.find_one({"_id": car_id_object})
     if not car_info:
         raise HTTPException(status_code=404, detail="Car not found.")
 
-    # Fetch driver ID from car_info
+    # Fetching driver ID
     driver_id = car_info.get("driver_id")
     if not driver_id:
         raise HTTPException(status_code=400, detail="Driver missing for the selected car.")
 
-    # Create the booking document with driver ID
+    # Create
     booking_doc = {
         "employee_id": booking.employee_id,
         "car_id": booking.car_id,
         "booking_date": booking.booking_date,
-        "driver_id": driver_id  # Automatically include driver_id from car_info
+        "driver_id": driver_id  # Automatically included because i made in car collection
     }
 
     # Inserting in the Database
@@ -81,8 +83,6 @@ async def create_booking(booking: Booking):
 
 @router.put("/bookings/update/")
 async def update_booking(update_booking: UpdateBooking):
-
-
     # Fetch the booking for the employee based on the previous booking date
     booking = await bookings.find_one({
         "employee_id": update_booking.employee_id,
@@ -92,30 +92,20 @@ async def update_booking(update_booking: UpdateBooking):
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found for the given employee on the specified date.")
 
-
     previous_booking_date_dt = datetime.strptime(update_booking.previous_booking_date, "%Y-%m-%d")
     if previous_booking_date_dt.date() <= datetime.now().date():
         raise HTTPException(status_code=400, detail="Cannot update booking on the booked date or in the past.")
 
-
     update_fields = {}
 
-
     if update_booking.car_id is not None:
-        # Convert car_id to ObjectId
-        try:
-            car_id_object = ObjectId(update_booking.car_id)
-            update_fields["car_id"] = car_id_object
-        except Exception:
-            raise HTTPException(status_code=400, detail="Invalid car ID format.")
-
+        update_fields["car_id"] = update_booking.car_id
 
     if update_booking.new_booking_date:
 
         new_booking_date_dt = datetime.strptime(update_booking.new_booking_date, "%Y-%m-%d")
         if new_booking_date_dt < datetime.now():
             raise HTTPException(status_code=400, detail="Cannot set booking date in the past.")
-
 
         existing_car_booking = await bookings.find_one({
             "car_id": update_fields.get("car_id", booking["car_id"]),  # Use the new car_id if provided
@@ -125,14 +115,13 @@ async def update_booking(update_booking: UpdateBooking):
             raise HTTPException(status_code=400, detail="The car is already booked on the new date.")
 
         update_fields["booking_date"] = update_booking.new_booking_date
-
-
+    #BUG in update -> converts to object id while updating
+    #FIXED
     if update_fields:
         await bookings.update_one(
             {"employee_id": update_booking.employee_id, "booking_date": update_booking.previous_booking_date},
             {"$set": update_fields}
         )
-
 
         await record_create({
             "employee_id": update_booking.employee_id,
