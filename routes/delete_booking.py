@@ -10,7 +10,7 @@ router = APIRouter()
 async def delete_booking(delete:DeleteModel):
     booking = await bookings.find_one({
         "employee_id": delete.employee_id, #adsad
-        "booking_date": delete.booking_date, #2024-...
+        "booking_date": delete.booking_date, #YEAR_MONTH_DATE
     })
     if not booking:
         raise HTTPException(status_code=400, detail="Booking not found")
