@@ -16,7 +16,8 @@ POST request to make a booking
 PUT request to make a booking
 GET request to view bookings by date
 POST request to make a history (Test Purpose)
-Note: DELETE method i couldn't finsih due to time shortage.(Will add later)
+DELETE request to delete a record but not on the date of the booked date. For past date handeling or 
+corner cases i made sure that they couldn't register a day from the past
 Note: Implemeted a total history of creation & update history but didn't add a GET method due to time shortage.
 
 For now, 
@@ -24,7 +25,7 @@ i made every input and stored as a string, but made some errors while inserting 
 Should have used the number plate of the car that i generated would have been easier, would have 
 been easier.
 
-I tried to intregrate the logic by using FastAPi and Mongodb. I created a random data set which you can find in CRUD folder. There i have
+I tried to intregrated the logic by using FastAPi and Mongodb. I created a random data set which you can find in CRUD folder. There i have
 inserted data for Employee and Cars manually through a loop. Also i have assigned a Driver while inserting car details.
 
 About Logic ->

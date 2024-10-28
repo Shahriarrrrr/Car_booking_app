@@ -9,16 +9,15 @@ router = APIRouter()
 
 @router.get("/search_history/", response_model=List[BookingResponse])
 async def search(date: str):
-    # Validate the date format
     try:
-        search_date = datetime.strptime(date, "%Y-%m-%d").date() # date object
+        search_date = datetime.strptime(date, "%Y-%m-%d").replace(hour = 0, minute = 0 , second = 0) # date object
         search_date_str = search_date.strftime("%Y-%m-%d")  # to string
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
 
     try:
 
-        records = await bookings.find({"booking_date": search_date_str}).to_list(None)
+        records = await bookings.find({"booking_date": search_date}).to_list(None)  #1 dileo hobe
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database query error: {str(e)}")
 
@@ -29,7 +28,8 @@ async def search(date: str):
     for record in records:
         record["_id"] = str(record["_id"])
         record["car_id"] = str(record["car_id"])
-        # Ensure driver_id is included in the response
+
+        record["booking_date"] = record["booking_date"].strftime("%Y-%m-%d")
         if "driver_id" not in record:
             record["driver_id"] = None
 
