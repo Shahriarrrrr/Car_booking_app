@@ -20,6 +20,11 @@ async def check_collections(db):
         "booking_date": "6000-12-31",
     })
     records = await bookings.find_one({"booking_date": "9000-12-31"})
+    datas = await employee_create.find_one({"employee_id": "0682ed10-7f90-4fd4-bb3d-5a094009c018"})
+    data = await car_collection.find_one({"_id": ObjectId("67190a6195a31c69bbd67bc1")})
+    print(type(str(data["_id"])))
+    print(data)
+    print(datas)
     print(booking)
     print(car_info)
     print("Collections in the database:", collections)
